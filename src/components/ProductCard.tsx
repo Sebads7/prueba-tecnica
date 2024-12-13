@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // FUNCTION PARA COMPRAR Y REDIRIGIR AL CARRITO.
 
   const handleBuyNow = () => {
-    if (quantity > 0) {
+    if (quantity > 0 && cart.items.length === 0) {
       addToCart(product, quantity);
       notifySuccess("Producto agregado! Redirigiendo al carrito");
       setTimeout(() => {
