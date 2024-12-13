@@ -5,6 +5,7 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { notifyError, notifySuccess } from "./Roast";
+import { useNavigate } from "react-router-dom";
 
 type ProductCardProps = {
   product: Product;
@@ -21,20 +22,42 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const { removeFromCart, addToCart } = useCart({ setCart });
 
+  // FUNCION PARA AGREGAR AL CARRITO
+
   const handleAddToCart = () => {
     if (quantity > 0) {
       addToCart(product, quantity);
       notifySuccess("Producto agregado al carrito");
     } else {
       notifyError("Seleccione una cantidad");
-      // alert("Seleccione una cantidad");
+    }
+  };
+
+  const navigate = useNavigate();
+
+  // FUNCTION PARA COMPRAR Y REDIRIGIR AL CARRITO.
+
+  const handleBuyNow = () => {
+    if (quantity > 0) {
+      addToCart(product, quantity);
+      notifySuccess("Producto agregado! Redirigiendo al carrito");
+      setTimeout(() => {
+        navigate("/cart"); // Redirect to the cart
+      }, 4000);
+    } else if (cart.items.some((item) => item.product.id === product.id)) {
+      notifySuccess("Redirigiendo al carrito");
+      setTimeout(() => {
+        navigate("/cart"); // Redirect to the cart
+      }, 4000);
+    } else {
+      notifyError("Seleccione una cantidad");
     }
   };
 
   const handleRemoveFromCart = () => {
     if (cart.items.length > 0) {
       removeFromCart(product);
-      notifySuccess("Product removed from cart");
+      notifySuccess("Producto eliminado del carrito");
       // alert("Producto eliminado del carrito");
       setQuantity(0);
     }
@@ -188,8 +211,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
             className={`w-full bg-blue-800  rounded-full  py-4 text-white font-extrabold ${
               product.stock === 0 ? "cursor-default" : "hover:bg-blue-800/90"
             }`}
+            onClick={handleBuyNow}
           >
-            Comprar Ahora
+            {cart && cart.items.some((item) => item.product.id === product.id)
+              ? "Checkout"
+              : "Comprar ahora"}
           </button>
 
           {/* En esta parte del código, se muestra un botón que permite agregar un producto al carrito. Si el producto ya está en el carrito, se muestra un botón para eliminarlo.  */}
@@ -204,10 +230,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           ) : (
             <button
               type="button"
-              className={`w-full border-2 border-blue-800   rounded-full  py-3 text-blue-800 font-extrabold mt-4 flex justify-center items-center gap-2 ${
-                product.stock === 0 ? "cursor-default" : "hover:bg-indigo-50"
-              }`}
-              onClick={product.stock === 0 ? () => {} : handleAddToCart}
+              className="w-full border-2 border-blue-800 hover:bg-indigo-50  rounded-full  py-3 text-blue-800 font-extrabold mt-4 flex justify-center items-center gap-2"
+              onClick={handleAddToCart}
             >
               Agregar
               <MdOutlineShoppingCart className="text-3xl" />

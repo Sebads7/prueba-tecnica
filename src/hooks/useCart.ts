@@ -1,3 +1,5 @@
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../components/firebase/firebase";
 import { Cart, Product } from "../types";
 
 interface UseCartProps {
@@ -6,34 +8,40 @@ interface UseCartProps {
 
 export const useCart = ({ setCart }: UseCartProps) => {
   //Esta funcion permite agregar productos al carrito
-  const addToCart = (product: Product, quantity: number) => {
-    setCart((prevCart) => {
-      const newCartItem = {
-        product,
-        quantity,
-      };
+  const addToCart = async (product: Product, quantity: number) => {
+    const cartDocRef = doc(db, "cart", "user123");
 
-      const updatedCart = {
-        ...prevCart,
-        items: [...prevCart.items, newCartItem],
-      };
+    const cartDoc = await getDoc(cartDocRef);
+    if (cartDoc.exists()) {
+      const existingCart = cartDoc.data() as Cart;
 
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
-
-      // console.log("Product added to cart", newCartItem);
-      return updatedCart;
-    });
+      // Check if the product already exists in the cart
+      const productIndex = existingCart.items.findIndex(
+        (item) => item.product.id === product.id
+      );
+      if (productIndex >= 0) {
+        existingCart.items[productIndex].quantity += quantity;
+      } else {
+        existingCart.items.push({ product, quantity });
+      }
+      await setDoc(cartDocRef, existingCart);
+      setCart(existingCart);
+    }
   };
 
   //Esta function permite eliminar productos del carrito
-  const removeFromCart = (product: Product) => {
+  const removeFromCart = async (product: Product) => {
     setCart((prevCart) => {
+      const updatedItems = prevCart.items.filter(
+        (item) => item.product.id !== product.id
+      );
+
       const updatedCart = {
         ...prevCart,
-        items: prevCart.items.filter((item) => item.product.id !== product.id),
+        items: updatedItems,
       };
-
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      const cartDocRef = doc(db, "cart", "user123");
+      setDoc(cartDocRef, updatedCart);
       return updatedCart;
     });
   };

@@ -14,6 +14,9 @@ const config: Config = {
       },
     ],
   },
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy", // Mock CSS modules
+  },
 };
 
 export default config;

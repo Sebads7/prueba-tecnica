@@ -7,6 +7,8 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Checkout from "./pages/Checkout";
 import { Cart, Product } from "./types";
 import { ToastContainer } from "react-toastify";
+import { db } from "./components/firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export type CartItem = {
   product: Product;
@@ -20,13 +22,17 @@ function App() {
     createdAt: new Date(),
   });
 
-  // Utilizo useEffect para actualizar el carrito en localStorage
   useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      setCart(JSON.parse(storedCart));
-      console.log("Cart loaded from localStorage");
-    }
+    const loadCart = async () => {
+      const cartDocRef = doc(db, "cart", "user123");
+      const cartDoc = await getDoc(cartDocRef);
+
+      if (cartDoc.exists()) {
+        setCart(cartDoc.data() as Cart);
+      }
+    };
+
+    loadCart();
   }, []);
 
   return (
@@ -38,7 +44,10 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home cart={cart} setCart={setCart} />} />
-          <Route path="/cart" element={<Checkout cart={cart} />} />
+          <Route
+            path="/cart"
+            element={<Checkout cart={cart} setCart={setCart} />}
+          />
         </Routes>
       </main>
     </Router>

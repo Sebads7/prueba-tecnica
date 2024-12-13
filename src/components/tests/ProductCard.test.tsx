@@ -2,6 +2,22 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import ProductCard from "../ProductCard";
 import { Product, Cart } from "../../types";
+import { useCart } from "../../hooks/useCart";
+
+jest.mock("../Roast", () => ({
+  notifySuccess: jest.fn(),
+  notifyError: jest.fn(),
+}));
+
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+}));
+
+jest.mock("../../hooks/useCart", () => ({
+  useCart: jest.fn(),
+}));
 
 describe("ProductCard Component", () => {
   const mockProduct: Product = {
@@ -21,17 +37,21 @@ describe("ProductCard Component", () => {
     createdAt: new Date(),
   };
 
-  const addToCart = jest.fn();
-  const removeFromCart = jest.fn();
+  const setCart = jest.fn();
+  const mockAddToCart = jest.fn();
+  const mockRemoveFromCart = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks(); // Reset mocks before each test
+    (useCart as jest.Mock).mockReturnValue({
+      addToCart: mockAddToCart,
+      removeFromCart: mockRemoveFromCart,
+    });
+  });
 
   it("renders product details correctly", () => {
     render(
-      <ProductCard
-        product={mockProduct}
-        cart={mockCart}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
-      />
+      <ProductCard product={mockProduct} cart={mockCart} setCart={setCart} />
     );
 
     expect(screen.getByText("Test Product")).toBeInTheDocument();
@@ -40,12 +60,7 @@ describe("ProductCard Component", () => {
 
   it("increments and decrements quantity", () => {
     render(
-      <ProductCard
-        product={mockProduct}
-        cart={mockCart}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
-      />
+      <ProductCard product={mockProduct} cart={mockCart} setCart={setCart} />
     );
 
     const incrementButton = screen.getByText("+");
@@ -61,12 +76,7 @@ describe("ProductCard Component", () => {
 
   it("does not exceed stock limit when incrementing quantity", () => {
     render(
-      <ProductCard
-        product={mockProduct}
-        cart={mockCart}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
-      />
+      <ProductCard product={mockProduct} cart={mockCart} setCart={setCart} />
     );
 
     const incrementButton = screen.getByText("+");
@@ -81,12 +91,7 @@ describe("ProductCard Component", () => {
 
   it("calls addToCart with correct arguments", () => {
     render(
-      <ProductCard
-        product={mockProduct}
-        cart={mockCart}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
-      />
+      <ProductCard product={mockProduct} cart={mockCart} setCart={setCart} />
     );
 
     const incrementButton = screen.getByText("+");
@@ -95,7 +100,7 @@ describe("ProductCard Component", () => {
     fireEvent.click(incrementButton);
     fireEvent.click(addToCartButton);
 
-    expect(addToCart).toHaveBeenCalledWith(mockProduct, 1);
+    expect(mockAddToCart).toHaveBeenCalledWith(mockProduct, 1);
   });
 
   it("calls removeFromCart when the product is in the cart", () => {
@@ -108,8 +113,7 @@ describe("ProductCard Component", () => {
       <ProductCard
         product={mockProduct}
         cart={cartWithItem}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
+        setCart={setCart}
       />
     );
 
@@ -117,17 +121,12 @@ describe("ProductCard Component", () => {
 
     fireEvent.click(removeFromCartButton);
 
-    expect(removeFromCart).toHaveBeenCalledWith(mockProduct);
+    expect(mockRemoveFromCart).toHaveBeenCalledWith(mockProduct);
   });
 
   it("displays 'Agregar' button when product is not in the cart", () => {
     render(
-      <ProductCard
-        product={mockProduct}
-        cart={mockCart}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
-      />
+      <ProductCard product={mockProduct} cart={mockCart} setCart={setCart} />
     );
 
     expect(screen.getByText("Agregar")).toBeInTheDocument();
@@ -143,8 +142,7 @@ describe("ProductCard Component", () => {
       <ProductCard
         product={mockProduct}
         cart={cartWithItem}
-        addToCart={addToCart}
-        removeFromCart={removeFromCart}
+        setCart={setCart}
       />
     );
 

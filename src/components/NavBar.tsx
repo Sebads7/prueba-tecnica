@@ -8,8 +8,8 @@ interface NavBarProps {
 
 const NavBar: React.FC<NavBarProps> = ({ cart }) => {
   return (
-    <div className="w-full h-10 p-5 flex justify-between border border-blue-100 pb-20">
-      <nav className="w-full pt-5 ">
+    <nav className="w-full h-10 p-5 flex justify-between border border-blue-100 pb-20">
+      <div className="w-full pt-5 ">
         <div className="flex gap-10   justify-center">
           <Link to="/" className="hover:text-blue-400 cursor-pointer">
             Home
@@ -18,7 +18,7 @@ const NavBar: React.FC<NavBarProps> = ({ cart }) => {
             Cart
           </Link>
         </div>
-      </nav>
+      </div>
 
       <div className="mr-10 cursor-pointer">
         <Link to="/cart">
@@ -28,7 +28,7 @@ const NavBar: React.FC<NavBarProps> = ({ cart }) => {
           <MdOutlineShoppingCart className="text-3xl" />
         </Link>
       </div>
-    </div>
+    </nav>
   );
 };
 

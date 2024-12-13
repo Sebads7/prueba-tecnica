@@ -11,6 +11,9 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ cart, setCart }) => {
   return (
     <div className="w-full px-4 ">
+      <h1 className="text-center font-bold mt-10 text-2xl">
+        Prueba Tecnica: Sebastian Di Salvatore
+      </h1>
       {products.map((product) => (
         <ProductCard
           key={product.id}

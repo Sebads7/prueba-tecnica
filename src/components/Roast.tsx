@@ -4,11 +4,11 @@ import "react-toastify/dist/ReactToastify.css";
 export const notifySuccess = (message: string) =>
   toast(<p className="text-lg">{message}</p>, {
     position: "top-right",
-    autoClose: 3000,
-    hideProgressBar: false,
+    autoClose: 1500,
+    hideProgressBar: true,
     closeOnClick: true,
     rtl: false,
-    pauseOnFocusLoss: true,
+    pauseOnFocusLoss: false,
     draggable: true,
     pauseOnHover: true,
     type: "success",
@@ -17,11 +17,11 @@ export const notifySuccess = (message: string) =>
 export const notifyError = (message: string) =>
   toast(<p>{message}</p>, {
     position: "top-right",
-    autoClose: 2000,
-    hideProgressBar: false,
+    autoClose: 1500,
+    hideProgressBar: true,
     closeOnClick: true,
     rtl: false,
-    pauseOnFocusLoss: true,
+    pauseOnFocusLoss: false,
     draggable: true,
     pauseOnHover: true,
     type: "error",

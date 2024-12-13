@@ -1,50 +1,55 @@
-# React + TypeScript + Vite
+Proyecto: Prueba tecnica con Vite, React, TypeScript y Tailwind CSS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una prueba tecnica de un componente de e-commerce que utiliza Vite como herramienta de construcción, junto con React, TypeScript y Tailwind CSS. Contiene componentes como Home, Checkout, Nav y ProductCard para gestionar y mostrar productos, carritos y compras.
 
-Currently, two official plugins are available:
+Requisitos previos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
-## Expanding the ESLint configuration
+Node.js (v16 o superior recomendado)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+npm o yarn
 
-- Configure the top-level `parserOptions` property like this:
+Instalación del proyecto
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+1. Clona el repositorio
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+# Reemplaza <url-del-repositorio> con la URL de tu repositorio
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+git clone <url-del-repositorio>
+cd <nombre-del-repositorio>
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+2. Instala las dependencias
+
+# Usando npm
+
+npm install
+
+# O usando yarn
+
+yarn install
+
+Estructura del proyecto
+
+src/
+├── components/
+│ ├── Nav.tsx # Barra de navegación principal
+│ ├── ProductCard.tsx # Tarjetas de productos individuales
+│
+├── pages/
+│ ├── Home.tsx # Página de inicio con productos listados
+│ ├── Checkout.tsx # Página de resumen del carrito y finalización de compra
+│
+├── hooks/
+│ ├── useCart.ts # Hook para gestionar el estado del carrito
+│ ├── useFormatPrice.ts # Hook para formatear precios
+│
+├── App.tsx # Componente raíz de la aplicación
+├── main.tsx # Punto de entrada principal
+└── index.css # Estilos globales, incluidos los estilos de Tailwind
+
+Scripts disponibles
+
+Iniciar el servidor de desarrollo
+
+npm run dev
