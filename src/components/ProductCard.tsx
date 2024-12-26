@@ -1,46 +1,86 @@
 import { CiCircleCheck, CiCircleRemove } from "react-icons/ci";
-import { Cart, Product } from "../types";
+import { Product } from "../types";
 import { useFormatPrice } from "../hooks/useFormatPrice";
-import { MdOutlineShoppingCart } from "react-icons/md";
-import { useState } from "react";
+
 import { useCart } from "../hooks/useCart";
 import { notifyError, notifySuccess } from "./Roast";
 import { useNavigate } from "react-router-dom";
+import { useCartContext } from "../hooks/useCartContext";
+import { useEffect, useState } from "react";
+import { QuantityBtn } from "./QuantityButtons";
+
+import ItemBtn from "./ItemBtn";
+import { MdOutlineShoppingCart } from "react-icons/md";
+import Loader from "./Loader";
 
 type ProductCardProps = {
   product: Product;
-  setCart: React.Dispatch<React.SetStateAction<Cart>>;
-  cart: Cart;
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({
-  product,
-  setCart,
-  cart,
-}) => {
-  const [quantity, setQuantity] = useState(0);
+const ProductCard = ({ product }: ProductCardProps) => {
+  const { cart, updateCart, toggleUpdateCart } = useCartContext();
+  const [quantity, setQuantity] = useState(
+    product.salesUnit === "area" ? 1 : 0
+  );
+  const [inputValue, setInputValue] = useState<number | string>(
+    product.unitValue || ""
+  );
 
-  const { removeFromCart, addToCart } = useCart({ setCart });
+  const cartItem = cart.items.find((item) => item.product.id === product.id);
+  const isUpdating = updateCart[product.id] || false;
+
+  /////////// HOOKS //////////////
+
+  const { formatPrice } = useFormatPrice();
+  const { removeFromCart, addToCart, updateItems } = useCart();
+  const navigate = useNavigate();
+  const { pageLoading } = useCartContext();
+
+  const unitPerBox = 2.68;
+
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity);
+      setInputValue((cartItem.quantity * unitPerBox).toFixed(2));
+    }
+  }, [cart.items, product.id, cartItem, product.unitValue]);
+
+  ////////// HANDLERS ///////////
+  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === "" ? "" : parseFloat(e.target.value);
+    if (value === "") {
+      setInputValue("");
+      setQuantity(0);
+    } else if (!isNaN(value)) {
+      const requiredQuantity = Math.ceil(value / unitPerBox);
+      if (requiredQuantity > product.stock) {
+        notifyError("No hay stock suficiente");
+      } else {
+        setInputValue(value);
+        setQuantity(requiredQuantity);
+        if (cartItem) {
+          toggleUpdateCart(product.id, true);
+        }
+      }
+    }
+  };
 
   // FUNCION PARA AGREGAR AL CARRITO
-
   const handleAddToCart = () => {
     if (quantity > 0) {
       addToCart(product, quantity);
-      notifySuccess("Producto agregado al carrito");
     } else {
       notifyError("Seleccione una cantidad");
     }
   };
 
-  const navigate = useNavigate();
-
   // FUNCTION PARA COMPRAR Y REDIRIGIR AL CARRITO.
-
   const handleBuyNow = () => {
-    if (quantity > 0 && cart.items.length === 0) {
+    if (quantity > 0 && !cartItem) {
       addToCart(product, quantity);
-      notifySuccess("Producto agregado! Redirigiendo al carrito");
+      setTimeout(() => {
+        notifySuccess("Redirigiendo al carrito");
+      }, 2000);
       setTimeout(() => {
         navigate("/cart"); // Redirect to the cart
       }, 4000);
@@ -48,34 +88,53 @@ const ProductCard: React.FC<ProductCardProps> = ({
       notifySuccess("Redirigiendo al carrito");
       setTimeout(() => {
         navigate("/cart"); // Redirect to the cart
-      }, 4000);
+      }, 1500);
     } else {
       notifyError("Seleccione una cantidad");
     }
   };
 
   const handleRemoveFromCart = () => {
-    if (cart.items.length > 0) {
+    if (cart.items.length > 0 && cartItem) {
       removeFromCart(product);
       notifySuccess("Producto eliminado del carrito");
-      // alert("Producto eliminado del carrito");
       setQuantity(0);
     }
   };
 
+  const handleUpdateCart = () => {
+    if (cartItem && quantity > 0) {
+      updateItems(product, quantity);
+    } else {
+      removeFromCart(product);
+    }
+  };
+
   const handleAddQuantity = () => {
-    if (product.stock - quantity > 0) {
-      setQuantity((prev) => prev + 1);
+    if (product.stock > quantity) {
+      const newQuantity = quantity + 1;
+      setQuantity(newQuantity);
+      if (cartItem) {
+        toggleUpdateCart(product.id, true);
+      }
+      if (product.salesUnit === "area" && product.unitValue) {
+        setInputValue((newQuantity * unitPerBox).toFixed(2));
+      }
     }
   };
 
   const handleRemoveQuantity = () => {
-    if (quantity > 0) {
-      setQuantity((prev) => prev - 1);
+    if (quantity > 1) {
+      const newQuantity = quantity - 1;
+      setQuantity(newQuantity);
+      if (product.salesUnit === "area" && product.unitValue) {
+        setInputValue((newQuantity * unitPerBox).toFixed(2));
+      }
+      if (cartItem) {
+        toggleUpdateCart(product.id, true);
+      }
     }
   };
-
-  const { formatPrice } = useFormatPrice();
 
   return (
     <div className="flex flex-col md:flex-row gap-7 items-center justify-center pt-20  md:pb-40 container md:w-3/4  mx-auto last:mb-10 ">
@@ -140,13 +199,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 <p className="text-zinc-400">unidades</p>
               </li>
             </ul>
-          ) : product.salesUnit === "area" ? (
+          ) : product.salesUnit === "area" && product.unitValue ? (
             <ul>
               <li className="font-semibold mb-2">Superficie</li>
               <li className="flex items-center gap-2">
-                <p className="border rounded-md py-1 px-4">
-                  {product.unitValue}
-                </p>
+                {pageLoading ? (
+                  <div className="border rounded-md w-20 p-1 flex justify-center items-center">
+                    {" "}
+                    <Loader size="w-6 h-6 " />
+                  </div>
+                ) : (
+                  <input
+                    className="border rounded-md w-20 p-1 flex justify-center items-center focus:ring-sky-500 no-spinner "
+                    placeholder={unitPerBox.toString()}
+                    value={inputValue}
+                    type="number"
+                    min="2.68"
+                    step="0.01"
+                    onChange={handleChangeInput}
+                  />
+                )}
+
                 <p className="text-zinc-400">{product.measurementUnit}</p>
               </li>
             </ul>
@@ -166,32 +239,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 product.stock === 0 ? "opacity-40" : ""
               }`}
             >
-              <button
-                className={`border rounded-md px-4 py-1 ${
-                  product.stock === 0 ? "cursor-default" : ""
-                }`}
-                type="button"
+              <QuantityBtn
                 onClick={handleRemoveQuantity}
-              >
-                -
-              </button>
+                text="-"
+                btnProp={quantity !== 0}
+                className="w-9 h-9"
+              />
+              {/* ///// quantity ///*/}
               <p className="border rounded-md px-7 py-1">
-                {cart.items.some(
-                  (item) => item.product.id === product.id && item.quantity > 0
-                )
-                  ? cart.items.find((item) => item.product.id === product.id)
-                      ?.quantity
-                  : quantity}
+                {pageLoading ? <Loader size="w-6 h-6" /> : quantity}
               </p>
-              <button
-                className={`border rounded-md px-4 py-1 ${
-                  product.stock === 0 ? "cursor-default" : ""
-                }`}
-                type="button"
+              <QuantityBtn
                 onClick={handleAddQuantity}
-              >
-                +
-              </button>
+                text="+"
+                btnProp={product.stock > quantity}
+                className="w-9 h-9"
+              />
               {product.salesUnit === "unit" && (
                 <p className="font-medium"> unidades</p>
               )}
@@ -206,36 +269,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* ///////////// BUTTONS:  BUY AND (ADD TO CART | REMOVE FROM CART) /////////////// */}
 
         <div className="mt-5 ">
-          <button
-            type="button"
-            className={`w-full bg-blue-800  rounded-full  py-4 text-white font-extrabold ${
-              product.stock === 0 ? "cursor-default" : "hover:bg-blue-800/90"
-            }`}
-            onClick={handleBuyNow}
-          >
-            {cart && cart.items.some((item) => item.product.id === product.id)
-              ? "Checkout"
-              : "Comprar ahora"}
-          </button>
-
+          <ItemBtn
+            clickEvent={handleBuyNow}
+            className="bg-blue-800 hover:bg-blue-800/90 text-white"
+            children={cart && cartItem ? "Ir al carrito" : "Comprar ahora"}
+          />
           {/* En esta parte del código, se muestra un botón que permite agregar un producto al carrito. Si el producto ya está en el carrito, se muestra un botón para eliminarlo.  */}
-          {cart && cart.items.some((item) => item.product.id === product.id) ? (
-            <button
-              type="button"
-              className="w-full border-2 border-blue-800 hover:bg-indigo-50  rounded-full  py-3 text-blue-800 font-extrabold mt-4 flex justify-center items-center gap-2"
-              onClick={handleRemoveFromCart}
-            >
-              Eliminar del carrito
-            </button>
+          {cart && cartItem ? (
+            <ItemBtn
+              clickEvent={isUpdating ? handleUpdateCart : handleRemoveFromCart}
+              className=" btn-white"
+              children={!isUpdating ? "Eliminar del carrito" : "Actualizar"}
+            />
           ) : (
-            <button
-              type="button"
-              className="w-full border-2 border-blue-800 hover:bg-indigo-50  rounded-full  py-3 text-blue-800 font-extrabold mt-4 flex justify-center items-center gap-2"
-              onClick={handleAddToCart}
-            >
-              Agregar
-              <MdOutlineShoppingCart className="text-3xl" />
-            </button>
+            <ItemBtn
+              clickEvent={handleAddToCart}
+              className=" btn-white"
+              children={
+                <>
+                  Agregar
+                  <MdOutlineShoppingCart className="text-3xl" />
+                </>
+              }
+            />
           )}
         </div>
       </div>

@@ -1,12 +1,10 @@
 import { MdOutlineShoppingCart } from "react-icons/md";
-import { Cart } from "../types";
+
 import { Link } from "react-router-dom";
+import { useCartContext } from "../hooks/useCartContext";
 
-interface NavBarProps {
-  cart: Cart;
-}
-
-const NavBar: React.FC<NavBarProps> = ({ cart }) => {
+const NavBar = () => {
+  const { cart } = useCartContext();
   return (
     <nav className="w-full h-10 p-5 flex justify-between border border-blue-100 pb-20">
       <div className="w-full pt-5 ">
@@ -15,7 +13,7 @@ const NavBar: React.FC<NavBarProps> = ({ cart }) => {
             Home
           </Link>
           <Link to="/cart" className="hover:text-blue-400 cursor-pointer">
-            Cart
+            Carrito
           </Link>
         </div>
       </div>
