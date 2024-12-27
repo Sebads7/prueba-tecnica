@@ -5,12 +5,14 @@ type ItemBtnProps = {
   clickEvent: () => void;
   children: React.ReactNode;
   className?: string;
+  buttonId: string;
 };
 
 const ItemBtn: React.FC<ItemBtnProps> = ({
   clickEvent,
   children,
   className,
+  buttonId,
 }) => {
   const { pageLoading, isLoading } = useCartContext();
   return (
@@ -20,9 +22,9 @@ const ItemBtn: React.FC<ItemBtnProps> = ({
       onClick={clickEvent}
     >
       {pageLoading ||
-      isLoading("removeFromCart") ||
-      isLoading("addToCart") ||
-      isLoading("updateItems") ? (
+      isLoading("removeFromCart", buttonId) ||
+      isLoading("addToCart", buttonId) ||
+      isLoading("updateItems", buttonId) ? (
         <Loader size="w-6 h-6" />
       ) : (
         <>{children}</>

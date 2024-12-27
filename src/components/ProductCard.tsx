@@ -124,7 +124,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleRemoveQuantity = () => {
-    if (quantity > 1) {
+    if (quantity > 0) {
       const newQuantity = quantity - 1;
       setQuantity(newQuantity);
       if (product.salesUnit === "area" && product.unitValue) {
@@ -273,6 +273,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             clickEvent={handleBuyNow}
             className="bg-blue-800 hover:bg-blue-800/90 text-white"
             children={cart && cartItem ? "Ir al carrito" : "Comprar ahora"}
+            buttonId={product.id}
           />
           {/* En esta parte del código, se muestra un botón que permite agregar un producto al carrito. Si el producto ya está en el carrito, se muestra un botón para eliminarlo.  */}
           {cart && cartItem ? (
@@ -280,11 +281,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
               clickEvent={isUpdating ? handleUpdateCart : handleRemoveFromCart}
               className=" btn-white"
               children={!isUpdating ? "Eliminar del carrito" : "Actualizar"}
+              buttonId={product.id}
             />
           ) : (
             <ItemBtn
               clickEvent={handleAddToCart}
               className=" btn-white"
+              buttonId={product.id}
               children={
                 <>
                   Agregar
