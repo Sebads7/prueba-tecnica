@@ -19,5 +19,5 @@
 }
 
 .btn-white {
-  @apply border-2 border-blue-800 hover:bg-indigo-50 text-blue-800;
+  @apply border-2 border-blue-800 hover:bg-indigo-50 text-blue-800 h-[3.5rem];
 }

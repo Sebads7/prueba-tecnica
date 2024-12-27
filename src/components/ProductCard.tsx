@@ -271,7 +271,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="mt-5 ">
           <ItemBtn
             clickEvent={handleBuyNow}
-            className="bg-blue-800 hover:bg-blue-800/90 text-white"
+            className="bg-blue-800 hover:bg-blue-800/90 text-white h-[3.5rem]"
             children={cart && cartItem ? "Ir al carrito" : "Comprar ahora"}
             buttonId={product.id}
           />
@@ -279,14 +279,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {cart && cartItem ? (
             <ItemBtn
               clickEvent={isUpdating ? handleUpdateCart : handleRemoveFromCart}
-              className=" btn-white"
+              className=" btn-white "
               children={!isUpdating ? "Eliminar del carrito" : "Actualizar"}
               buttonId={product.id}
             />
           ) : (
             <ItemBtn
               clickEvent={handleAddToCart}
-              className=" btn-white"
+              className=" btn-white "
               buttonId={product.id}
               children={
                 <>
